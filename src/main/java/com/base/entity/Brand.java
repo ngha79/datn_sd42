@@ -16,5 +16,5 @@ public class Brand {
     @Column(name = "brand_name", nullable = false)
     private String brandName;
 
-    private String logo;
+    private String brandLogo;
 }
