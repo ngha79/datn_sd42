@@ -21,4 +21,6 @@ public interface ProductVariantRepository extends JpaRepository<ProductVariant, 
 
     @Query("SELECT v FROM ProductVariant v WHERE v.stockQuantity <= v.lowStockThreshold")
     List<ProductVariant> findAllLowStock();
+
+    List<ProductVariant> findByProduct_ProductIdAndProduct_DeletedFalse(Long productId);
 }
