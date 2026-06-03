@@ -8,6 +8,8 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.math.BigDecimal;
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -40,4 +42,39 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
         @Param("status") Product.ProductStatus status,
         Pageable pageable
     );
+
+    Page<Product> findAllByDeletedFalse(Pageable pageable);
+
+    Page<Product> findByProductNameContainingIgnoreCaseAndDeletedFalse(
+            String keyword, Pageable pageable);
+
+
+
+    Page<Product> findByStatusAndDeletedFalse(Product.ProductStatus status, Pageable pageable);
+
+    @Query("""
+        SELECT p FROM Product p
+        WHERE p.deleted = false
+          AND (:categoryId IS NULL OR p.category.id = :categoryId)
+          AND (:brandId IS NULL OR p.brand.id = :brandId)
+          AND (:minPrice IS NULL OR p.basePrice >= :minPrice)
+          AND (:maxPrice IS NULL OR p.basePrice <= :maxPrice)
+          AND (:status IS NULL OR p.status = :status)
+          AND (:keyword IS NULL OR LOWER(p.productName) LIKE LOWER(CONCAT('%', :keyword, '%')))
+    """)
+    Page<Product> filterProducts(
+            @Param("categoryId") Long categoryId,
+            @Param("brandId") Long brandId,
+            @Param("minPrice") BigDecimal minPrice,
+            @Param("maxPrice") BigDecimal maxPrice,
+            @Param("status") Product.ProductStatus status,
+            @Param("keyword") String keyword,
+            Pageable pageable
+    );
+
+    boolean existsByProductNameAndDeletedFalse(String productName);
+
+    Page<Product> findAllByDeletedTrue(Pageable pageable);
+
+    List<Product> findTop10ByDeletedFalseOrderByAverageRatingDesc();
 }

@@ -9,6 +9,8 @@ import java.util.Optional;
 
 @Repository
 public interface ProductImageRepository extends JpaRepository<ProductImage, Long> {
-    List<ProductImage> findByVariant_VariantId(Long variantId);
-    Optional<ProductImage> findByVariant_VariantIdAndIsThumbnail(Long variantId, boolean isThumbnail);
+    List<ProductImage> findByVariantVariantId(Long variantId);
+    Optional<ProductImage> findByVariantVariantIdAndThumbnailFalse(Long variantId);
+    List<ProductImage> findByVariantVariantIdAndThumbnailTrue(Long variantId);
+    void deleteByVariantVariantId(Long variantId);
 }

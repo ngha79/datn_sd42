@@ -20,7 +20,7 @@ public class ProductImage {
     @Column(name = "image_url", nullable = false)
     private String imageUrl;
 
-    @Column(name = "is_thumbnail")
+    @Column(name = "thumbnail")
     @Builder.Default
-    private boolean isThumbnail = false;
+    private boolean thumbnail = false;
 }
