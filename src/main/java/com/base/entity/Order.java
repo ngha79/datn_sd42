@@ -71,6 +71,12 @@ public class Order {
     @Column(columnDefinition = "TEXT")
     private String note;
 
+    @Column(name = "guest_name")
+    private String guestName;
+
+    @Column(name = "guest_phone")
+    private String guestPhone;
+
     @Column(name = "created_at", updatable = false)
     @Builder.Default
     private LocalDateTime createdAt = LocalDateTime.now();

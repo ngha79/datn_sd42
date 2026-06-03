@@ -33,5 +33,5 @@ public class Address {
 
     @Column(name = "is_default")
     @Builder.Default
-    private boolean isDefault = false;
+    private Boolean isDefault = false;
 }
