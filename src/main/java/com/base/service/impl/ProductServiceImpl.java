@@ -2,6 +2,7 @@ package com.base.service.impl;
 
 import com.base.dto.request.product.ProductRequest;
 import com.base.dto.response.product.ProductResponse;
+import com.base.dto.response.product.TopWishlistProductResponse;
 import com.base.entity.Brand;
 import com.base.entity.Category;
 import com.base.entity.Product;
@@ -249,11 +250,9 @@ public class ProductServiceImpl implements ProductService {
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy thương hiệu: " + brandId));
     }
 
-    private boolean isValidFile(MultipartFile file) {
-        return file != null && !file.isEmpty();
-    }
 
     private ProductResponse toResponse(Product product) {
         return modelMapper.map(product, ProductResponse.class);
     }
+
 }

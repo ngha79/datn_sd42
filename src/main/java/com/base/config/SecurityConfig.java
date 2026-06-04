@@ -47,6 +47,7 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(WHITE_LIST_URLS).permitAll()
                 .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
+                .requestMatchers("/api/v1/wishlist/**").hasRole("USER")
                 .anyRequest().authenticated()
             )
             .sessionManagement(session ->
