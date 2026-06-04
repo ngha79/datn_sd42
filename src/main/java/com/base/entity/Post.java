@@ -2,6 +2,8 @@ package com.base.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
 import java.util.HashSet;
@@ -9,7 +11,11 @@ import java.util.Set;
 
 @Entity
 @Table(name = "posts")
-@Getter @Setter @Builder @NoArgsConstructor @AllArgsConstructor
+@Getter
+@Setter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class Post {
 
     @Id
@@ -45,32 +51,29 @@ public class Post {
 
     @ManyToMany
     @JoinTable(
-        name = "post_category_mapping",
-        joinColumns = @JoinColumn(name = "post_id"),
-        inverseJoinColumns = @JoinColumn(name = "post_category_id")
+            name = "post_category_mapping",
+            joinColumns = @JoinColumn(name = "post_id"),
+            inverseJoinColumns = @JoinColumn(name = "post_category_id")
     )
     @Builder.Default
     private Set<PostCategory> categories = new HashSet<>();
 
     @ManyToMany
     @JoinTable(
-        name = "post_tag_mapping",
-        joinColumns = @JoinColumn(name = "post_id"),
-        inverseJoinColumns = @JoinColumn(name = "tag_id")
+            name = "post_tag_mapping",
+            joinColumns = @JoinColumn(name = "post_id"),
+            inverseJoinColumns = @JoinColumn(name = "tag_id")
     )
     @Builder.Default
     private Set<PostTag> tags = new HashSet<>();
 
+    @CreationTimestamp
     @Column(name = "created_at", updatable = false)
-    @Builder.Default
-    private LocalDateTime createdAt = LocalDateTime.now();
+    private LocalDateTime createdAt;
 
+    @UpdateTimestamp
     @Column(name = "updated_at")
-    @Builder.Default
-    private LocalDateTime updatedAt = LocalDateTime.now();
-
-    @PreUpdate
-    public void preUpdate() { this.updatedAt = LocalDateTime.now(); }
+    private LocalDateTime updatedAt;
 
     public enum PostStatus { DRAFT, PUBLISHED, ARCHIVED }
 }

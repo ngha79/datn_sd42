@@ -4,11 +4,13 @@ import com.base.dto.request.LoginRequest;
 import com.base.dto.request.RefreshTokenRequest;
 import com.base.dto.request.RegisterRequest;
 import com.base.dto.response.AuthResponse;
+import com.base.entity.Cart;
 import com.base.entity.RefreshToken;
 import com.base.entity.Role;
 import com.base.entity.User;
 import com.base.exception.ResourceAlreadyExistsException;
 import com.base.exception.ResourceNotFoundException;
+import com.base.repository.CartRepository;
 import com.base.repository.RoleRepository;
 import com.base.repository.UserRepository;
 import com.base.security.jwt.JwtService;
@@ -33,6 +35,7 @@ public class AuthServiceImpl implements AuthService {
     private final AuthenticationManager authenticationManager;
     private final RefreshTokenService refreshTokenService;
     private final RoleRepository roleRepository;
+    private final CartRepository cartRepository;
 
     @Override
     @Transactional
@@ -55,6 +58,12 @@ public class AuthServiceImpl implements AuthService {
 
         userRepository.save(user);
         log.info("User registered: {}", user.getUsername());
+
+        // Create cart user
+        Cart cart = Cart.builder()
+                .user(user)
+                .build();
+        cartRepository.save(cart);
 
         String accessToken = jwtService.generateToken(user);
         RefreshToken refreshToken = refreshTokenService.createRefreshToken(user);

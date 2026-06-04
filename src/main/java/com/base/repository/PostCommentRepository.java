@@ -8,6 +8,9 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface PostCommentRepository extends JpaRepository<PostComment, Long> {
-    Page<PostComment> findByPost_PostId(Long postId, Pageable pageable);
-    void deleteByPost_PostId(Long postId);
+    Page<PostComment> findByPost_PostIdAndParentIsNullAndDeletedFalse(
+            Long postId, Pageable pageable
+    );
+
+    long countByPost_PostIdAndDeletedFalse(Long postId);
 }

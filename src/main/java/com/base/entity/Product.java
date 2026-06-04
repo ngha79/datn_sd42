@@ -2,6 +2,8 @@ package com.base.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -51,23 +53,36 @@ public class Product {
     @Builder.Default
     private ProductStatus status = ProductStatus.ACTIVE;
 
-    @Column(name = "created_at", updatable = false)
-    @Builder.Default
-    private LocalDateTime createdAt = LocalDateTime.now();
-
-    @Column(name = "updated_at")
-    @Builder.Default
-    private LocalDateTime updatedAt = LocalDateTime.now();
-
     @Builder.Default
     private boolean deleted = false;
 
-    @PreUpdate
-    public void preUpdate() { this.updatedAt = LocalDateTime.now(); }
+    @CreationTimestamp
+    @Column(name = "created_at", updatable = false)
+    private LocalDateTime createdAt;
 
-    public enum ProductStatus { ACTIVE, INACTIVE, OUT_OF_STOCK }
+    @UpdateTimestamp
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
 
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @Builder.Default
     private List<ProductVariant> variants = new ArrayList<>();
+
+    public enum ProductStatus {
+        ACTIVE, INACTIVE, OUT_OF_STOCK
+    }
+
+    // Tự động sync status dựa trên variants
+    public void syncStatus() {
+        if (deleted) return;
+
+        boolean hasAvailableStock = variants.stream()
+                .anyMatch(v -> v.getAvailableQuantity() > 0);
+
+        if (status == ProductStatus.ACTIVE && !hasAvailableStock) {
+            status = ProductStatus.OUT_OF_STOCK;
+        } else if (status == ProductStatus.OUT_OF_STOCK && hasAvailableStock) {
+            status = ProductStatus.ACTIVE;
+        }
+    }
 }

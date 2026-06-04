@@ -42,4 +42,6 @@ public interface PostRepository extends JpaRepository<Post, Long>, JpaSpecificat
         WHERE p.postId = :id AND p.status = 'PUBLISHED'
     """)
     Optional<Post> findByIdAndPublished(Long id);
+
+    Optional<Post> findByPostIdAndStatus(Long postId, Post.PostStatus status);
 }
