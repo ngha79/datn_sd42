@@ -1,6 +1,10 @@
 package com.base.service.impl;
 
-import com.base.dto.request.ImageUploadMessage;
+import com.base.dto.request.ImageUploadBannerMessage;
+import com.base.dto.request.ImageUploadPostMessage;
+import com.base.dto.request.ImageUploadProductMessage;
+import com.base.repository.BannerRepository;
+import com.base.repository.PostRepository;
 import com.base.repository.ProductImageRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -16,9 +20,11 @@ public class FallbackImageUploadService {
     private final CloudinaryService cloudinaryService;
     private final LocalStorageService localStorageService;
     private final ProductImageRepository imageRepository;
+    private final BannerRepository bannerRepository;
+    private final PostRepository postRepository;
 
     @Async
-    public void process(ImageUploadMessage message) {
+    public void process(ImageUploadProductMessage message) {
         log.info("Fallback sync processing: imageId={}, action={}",
                 message.getImageId(), message.getAction());
         try {
@@ -45,11 +51,83 @@ public class FallbackImageUploadService {
         }
     }
 
+    @Async
+    public void process(ImageUploadBannerMessage message) {
+        log.info("Fallback sync processing: bannerId={}, action={}",
+                message.getBannerId(), message.getAction());
+        try {
+            switch (message.getAction()) {
+
+                case CREATE -> {
+                    String cloudUrl = cloudinaryService.uploadFromPath(message.getTempFilePath());
+                    updateImageBannerUrl(message.getBannerId(), cloudUrl);
+                    localStorageService.deleteTempFile(message.getTempFilePath());
+                }
+
+                case UPDATE -> {
+                    cloudinaryService.deleteImage(message.getOldImageUrl());
+                    String cloudUrl = cloudinaryService.uploadFromPath(message.getTempFilePath());
+                    updateImageBannerUrl(message.getBannerId(), cloudUrl);
+                    localStorageService.deleteTempFile(message.getTempFilePath());
+                }
+
+                case DELETE -> cloudinaryService.deleteImage(message.getOldImageUrl());
+            }
+        } catch (Exception e) {
+            log.error("Fallback processing failed: bannerId={}, error={}",
+                    message.getBannerId(), e.getMessage());
+        }
+    }
+
+    @Async
+    public void process(ImageUploadPostMessage message) {
+        log.info("Fallback sync processing: bannerId={}, action={}",
+                message.getPostId(), message.getAction());
+        try {
+            switch (message.getAction()) {
+
+                case CREATE -> {
+                    String cloudUrl = cloudinaryService.uploadFromPath(message.getTempFilePath());
+                    updateImageBannerUrl(message.getPostId(), cloudUrl);
+                    localStorageService.deleteTempFile(message.getTempFilePath());
+                }
+
+                case UPDATE -> {
+                    cloudinaryService.deleteImage(message.getOldImageUrl());
+                    String cloudUrl = cloudinaryService.uploadFromPath(message.getTempFilePath());
+                    updateImageBannerUrl(message.getPostId(), cloudUrl);
+                    localStorageService.deleteTempFile(message.getTempFilePath());
+                }
+
+                case DELETE -> cloudinaryService.deleteImage(message.getOldImageUrl());
+            }
+        } catch (Exception e) {
+            log.error("Fallback processing failed: postId={}, error={}",
+                    message.getPostId(), e.getMessage());
+        }
+    }
+
     @Transactional
     protected void updateImageUrl(Long imageId, String cloudUrl) {
         imageRepository.findById(imageId).ifPresent(img -> {
             img.setImageUrl(cloudUrl);
             imageRepository.save(img);
+        });
+    }
+
+    @Transactional
+    protected void updateImageBannerUrl(Long bannerId, String cloudUrl) {
+        bannerRepository.findById(bannerId).ifPresent(img -> {
+            img.setImageUrl(cloudUrl);
+            bannerRepository.save(img);
+        });
+    }
+
+    @Transactional
+    protected void updateImagePostUrl(Long postId, String cloudUrl) {
+        postRepository.findById(postId).ifPresent(img -> {
+            img.setThumbnail(cloudUrl);
+            postRepository.save(img);
         });
     }
 }

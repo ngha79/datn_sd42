@@ -7,7 +7,11 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "banners")
-@Getter @Setter @Builder @NoArgsConstructor @AllArgsConstructor
+@Getter
+@Setter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class Banner {
 
     @Id
@@ -24,13 +28,30 @@ public class Banner {
     @Column(name = "redirect_url")
     private String redirectUrl;
 
-    private String position;
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private BannerPosition position;
+
+    @Column(name = "display_order")
+    private Integer displayOrder;
 
     @Column(name = "is_active")
     @Builder.Default
-    private boolean isActive = true;
+    private Boolean isActive = true;
+
+    private LocalDateTime startDate;
+
+    private LocalDateTime endDate;
 
     @Column(name = "created_at", updatable = false)
     @Builder.Default
     private LocalDateTime createdAt = LocalDateTime.now();
+
+    private LocalDateTime updatedAt;
+
+    public enum BannerPosition {
+        HOME_TOP,
+        HOME_MIDDLE,
+        HOME_BOTTOM
+    }
 }
