@@ -2,6 +2,8 @@ package com.base.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -30,12 +32,10 @@ public class ProductVariant {
     private String sku;
 
     private String barcode;
-
     private String size;
-
     private String color;
 
-    @Column(precision = 15, scale = 2)
+    @Column(precision = 15, scale = 2, nullable = false)
     private BigDecimal price;
 
     @Column(name = "stock_quantity")
@@ -53,11 +53,31 @@ public class ProductVariant {
     @Column(precision = 10, scale = 3)
     private BigDecimal weight;
 
+    @Version
+    private Integer version;
+
+    @CreationTimestamp
     @Column(name = "created_at", updatable = false)
-    @Builder.Default
-    private LocalDateTime createdAt = LocalDateTime.now();
+    private LocalDateTime createdAt;
+
+    @UpdateTimestamp
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
 
     @OneToMany(mappedBy = "variant", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @Builder.Default
     private List<ProductImage> images = new ArrayList<>();
+
+    @Transient
+    public int getAvailableQuantity() {
+        return Math.max(0, stockQuantity - reservedQuantity);
+    }
+
+    @Transient
+    public boolean isAvailable() {
+        return product != null
+                && product.getStatus() == Product.ProductStatus.ACTIVE
+                && !product.isDeleted()
+                && getAvailableQuantity() > 0;
+    }
 }

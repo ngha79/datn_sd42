@@ -1,5 +1,6 @@
 package com.base.repository;
 
+import com.base.entity.Product;
 import com.base.entity.ProductVariant;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -23,4 +24,6 @@ public interface ProductVariantRepository extends JpaRepository<ProductVariant, 
     List<ProductVariant> findAllLowStock();
 
     List<ProductVariant> findByProduct_ProductIdAndProduct_DeletedFalse(Long productId);
+
+    Optional<ProductVariant> findByVariantIdAndProduct_StatusAndProduct_DeletedFalse(Long variantId, Product.ProductStatus status);
 }
