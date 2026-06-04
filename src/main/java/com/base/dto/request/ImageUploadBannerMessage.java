@@ -1,6 +1,9 @@
 package com.base.dto.request;
 
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
 
@@ -8,10 +11,9 @@ import java.io.Serializable;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class ImageUploadMessage implements Serializable {
+public class ImageUploadBannerMessage implements Serializable {
 
-    private Long imageId;
-    private Long variantId;
+    private Long bannerId;
     private String tempFilePath;
     private String oldImageUrl;
     private ActionType action;

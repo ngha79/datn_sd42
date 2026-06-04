@@ -33,6 +33,10 @@ public class SecurityConfig {
     private static final String[] WHITE_LIST_URLS = {
             "/api/v1/auth/**",
             "/api/v1/category/**",
+            "/api/v1/banners/**",
+            "/api/v1/posts/**",
+            "/api/v1/post-category/**",
+            "/api/v1/product/**",
             "/h2-console/**",
             "/actuator/**",
             "/swagger-ui/**",

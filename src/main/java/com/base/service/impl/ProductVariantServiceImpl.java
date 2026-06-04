@@ -1,6 +1,6 @@
 package com.base.service.impl;
 
-import com.base.dto.request.ImageUploadMessage;
+import com.base.dto.request.ImageUploadProductMessage;
 import com.base.dto.request.product.ProductVariantRequest;
 import com.base.dto.response.product.ProductImageResponse;
 import com.base.dto.response.product.ProductVariantResponse;
@@ -66,10 +66,10 @@ public class ProductVariantServiceImpl implements ProductVariantService {
         variant.getImages().forEach(img -> {
             if (img.getImageUrl() != null && img.getImageUrl().contains("cloudinary")) {
                 imageUploadProducer.sendUploadMessage(
-                        ImageUploadMessage.builder()
+                        ImageUploadProductMessage.builder()
                                 .imageId(img.getImageId())
                                 .oldImageUrl(img.getImageUrl())
-                                .action(ImageUploadMessage.ActionType.DELETE)
+                                .action(ImageUploadProductMessage.ActionType.DELETE)
                                 .build()
                 );
             }
@@ -113,11 +113,11 @@ public class ProductVariantServiceImpl implements ProductVariantService {
         image = imageRepository.save(image);
 
         imageUploadProducer.sendUploadMessage(
-                ImageUploadMessage.builder()
+                ImageUploadProductMessage.builder()
                         .imageId(image.getImageId())
                         .variantId(variantId)
                         .tempFilePath(tempPath)
-                        .action(ImageUploadMessage.ActionType.CREATE)
+                        .action(ImageUploadProductMessage.ActionType.CREATE)
                         .build()
         );
 
@@ -134,10 +134,10 @@ public class ProductVariantServiceImpl implements ProductVariantService {
         // Xóa Cloudinary bất đồng bộ
         if (image.getImageUrl() != null && image.getImageUrl().contains("cloudinary")) {
             imageUploadProducer.sendUploadMessage(
-                    ImageUploadMessage.builder()
+                    ImageUploadProductMessage.builder()
                             .imageId(imageId)
                             .oldImageUrl(image.getImageUrl())
-                            .action(ImageUploadMessage.ActionType.DELETE)
+                            .action(ImageUploadProductMessage.ActionType.DELETE)
                             .build()
             );
         }

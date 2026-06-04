@@ -1,6 +1,8 @@
 package com.base.queue;
 
-import com.base.dto.request.ImageUploadMessage;
+import com.base.dto.request.ImageUploadBannerMessage;
+import com.base.dto.request.ImageUploadPostMessage;
+import com.base.dto.request.ImageUploadProductMessage;
 import com.base.service.impl.FallbackImageUploadService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -24,11 +26,39 @@ public class ImageUploadProducer {
     @Value("${rabbitmq.routing-key.image-upload}")
     private String imageUploadRoutingKey;
 
-    public void sendUploadMessage(ImageUploadMessage message) {
+    public void sendUploadMessage(ImageUploadProductMessage message) {
         try {
             amqpTemplate.convertAndSend(imageExchange, imageUploadRoutingKey, message);
             log.info("Queued image message: imageId={}, action={}",
                     message.getImageId(), message.getAction());
+
+        } catch (AmqpConnectException | AmqpIOException e) {
+            // RabbitMQ không khả dụng → fallback xử lý đồng bộ
+            log.warn("RabbitMQ unavailable, falling back to sync upload. Reason: {}",
+                    e.getMessage());
+            fallbackService.process(message);
+        }
+    }
+
+    public void sendUploadMessage(ImageUploadBannerMessage message) {
+        try {
+            amqpTemplate.convertAndSend(imageExchange, imageUploadRoutingKey, message);
+            log.info("Queued image message: bannerId={}, action={}",
+                    message.getBannerId(), message.getAction());
+
+        } catch (AmqpConnectException | AmqpIOException e) {
+            // RabbitMQ không khả dụng → fallback xử lý đồng bộ
+            log.warn("RabbitMQ unavailable, falling back to sync upload. Reason: {}",
+                    e.getMessage());
+            fallbackService.process(message);
+        }
+    }
+
+    public void sendUploadMessage(ImageUploadPostMessage message) {
+        try {
+            amqpTemplate.convertAndSend(imageExchange, imageUploadRoutingKey, message);
+            log.info("Queued image message: postId={}, action={}",
+                    message.getPostId(), message.getAction());
 
         } catch (AmqpConnectException | AmqpIOException e) {
             // RabbitMQ không khả dụng → fallback xử lý đồng bộ
