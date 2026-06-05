@@ -65,7 +65,7 @@ public class ProductVariantServiceImpl implements ProductVariantService {
         // Xóa tất cả ảnh Cloudinary của variant bất đồng bộ
         variant.getImages().forEach(img -> {
             if (img.getImageUrl() != null && img.getImageUrl().contains("cloudinary")) {
-                imageUploadProducer.sendUploadMessage(
+                imageUploadProducer.sendUploadProductMessage(
                         ImageUploadProductMessage.builder()
                                 .imageId(img.getImageId())
                                 .oldImageUrl(img.getImageUrl())
@@ -112,7 +112,7 @@ public class ProductVariantServiceImpl implements ProductVariantService {
                 .build();
         image = imageRepository.save(image);
 
-        imageUploadProducer.sendUploadMessage(
+        imageUploadProducer.sendUploadProductMessage(
                 ImageUploadProductMessage.builder()
                         .imageId(image.getImageId())
                         .variantId(variantId)
@@ -133,7 +133,7 @@ public class ProductVariantServiceImpl implements ProductVariantService {
 
         // Xóa Cloudinary bất đồng bộ
         if (image.getImageUrl() != null && image.getImageUrl().contains("cloudinary")) {
-            imageUploadProducer.sendUploadMessage(
+            imageUploadProducer.sendUploadProductMessage(
                     ImageUploadProductMessage.builder()
                             .imageId(imageId)
                             .oldImageUrl(image.getImageUrl())

@@ -71,7 +71,7 @@ public class PostServiceImpl implements PostService {
 
         post = postRepository.save(post);
 
-        imageUploadProducer.sendUploadMessage(
+        imageUploadProducer.sendUploadPostMessage(
                 ImageUploadPostMessage.builder()
                         .postId(post.getPostId())
                         .tempFilePath(tempPath)
@@ -112,7 +112,7 @@ public class PostServiceImpl implements PostService {
 
             post.setThumbnail(tempUrl);
 
-            imageUploadProducer.sendUploadMessage(
+            imageUploadProducer.sendUploadPostMessage(
                     ImageUploadPostMessage.builder()
                             .postId(post.getPostId())
                             .tempFilePath(tempPath)

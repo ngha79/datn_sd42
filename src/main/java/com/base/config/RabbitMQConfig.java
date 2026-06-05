@@ -13,31 +13,88 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class RabbitMQConfig {
 
-    @Value("${rabbitmq.queue.image-upload}")
-    private String imageUploadQueue;
+    @Value("${rabbitmq.queue.product-image-upload}")
+    private String productQueue;
+
+    @Value("${rabbitmq.queue.banner-image-upload}")
+    private String bannerQueue;
+
+    @Value("${rabbitmq.queue.post-image-upload}")
+    private String postQueue;
+
+    @Value("${rabbitmq.queue.chat-image-upload}")
+    private String chatQueue;
 
     @Value("${rabbitmq.exchange.image}")
     private String imageExchange;
 
-    @Value("${rabbitmq.routing-key.image-upload}")
-    private String imageUploadRoutingKey;
+    @Value("${rabbitmq.routing-key.product-image-upload}")
+    private String productRoutingKey;
+
+    @Value("${rabbitmq.routing-key.banner-image-upload}")
+    private String bannerRoutingKey;
+
+    @Value("${rabbitmq.routing-key.post-image-upload}")
+    private String postRoutingKey;
+
+    @Value("${rabbitmq.routing-key.chat-image-upload}")
+    private String chatRoutingKey;
 
     @Bean
-    public Queue imageUploadQueue() {
-        return QueueBuilder.durable(imageUploadQueue).build();
+    public Queue imageProductUploadQueue() {
+        return QueueBuilder.durable(productQueue).build();
     }
 
     @Bean
-    public DirectExchange imageExchange() {
-        return new DirectExchange(imageExchange);
+    public Binding imageProductUploadBinding() {
+        return BindingBuilder
+                .bind(imageProductUploadQueue())
+                .to(imageExchange())
+                .with(productRoutingKey);
+    }
+
+    @Bean
+    public Queue imageBannerUploadQueue() {
+        return QueueBuilder.durable(bannerQueue).build();
+    }
+
+    @Bean
+    public Binding imageBannerUploadBinding() {
+        return BindingBuilder
+                .bind(imageBannerUploadQueue())
+                .to(imageExchange())
+                .with(bannerRoutingKey);
+    }
+
+    @Bean
+    public Queue imagePostUploadQueue() {
+        return QueueBuilder.durable(postQueue).build();
     }
 
     @Bean
     public Binding imageUploadBinding() {
         return BindingBuilder
-                .bind(imageUploadQueue())
+                .bind(imagePostUploadQueue())
                 .to(imageExchange())
-                .with(imageUploadRoutingKey);
+                .with(postRoutingKey);
+    }
+
+    @Bean
+    public Queue imageChatUploadQueue() {
+        return QueueBuilder.durable(chatQueue).build();
+    }
+
+    @Bean
+    public Binding imageChatUploadBinding() {
+        return BindingBuilder
+                .bind(imageChatUploadQueue())
+                .to(imageExchange())
+                .with(chatRoutingKey);
+    }
+
+    @Bean
+    public DirectExchange imageExchange() {
+        return new DirectExchange(imageExchange);
     }
 
     @Bean
