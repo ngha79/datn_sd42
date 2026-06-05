@@ -6,12 +6,35 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
-@Repository
 public interface ConversationRepository extends JpaRepository<Conversation, Long> {
-    Page<Conversation> findByUser_UserId(Long userId, Pageable pageable);
-    Page<Conversation> findByStaff_UserIdAndStatus(Long staffId, Conversation.ConversationStatus status, Pageable pageable);
-    Page<Conversation> findByStatus(Conversation.ConversationStatus status, Pageable pageable);
-    Optional<Conversation> findByUser_UserIdAndStatus(Long userId, Conversation.ConversationStatus status);
+
+    // User
+    Page<Conversation> findByUser_UserIdOrderByLastMessageAtDesc(
+            Long userId, Pageable pageable);
+
+    Page<Conversation> findByUser_UserIdAndStatusOrderByLastMessageAtDesc(
+            Long userId, Conversation.ConversationStatus status, Pageable pageable);
+
+    // Staff
+    Page<Conversation> findByStaff_UserIdOrderByLastMessageAtDesc(
+            Long staffId, Pageable pageable);
+
+    Page<Conversation> findByStaff_UserIdAndStatusOrderByLastMessageAtDesc(
+            Long staffId, Conversation.ConversationStatus status, Pageable pageable);
+
+    // Admin
+    Page<Conversation> findAllByOrderByLastMessageAtDesc(Pageable pageable);
+
+    Page<Conversation> findByStatusOrderByLastMessageAtDesc(
+            Conversation.ConversationStatus status, Pageable pageable);
+
+    // Pending
+    Page<Conversation> findByStaffIsNullAndStatusOrderByCreatedAtAsc(
+            Conversation.ConversationStatus status, Pageable pageable);
+
+    boolean existsByUser_UserIdAndStatusIn(
+            Long userId, List<Conversation.ConversationStatus> statuses);
 }

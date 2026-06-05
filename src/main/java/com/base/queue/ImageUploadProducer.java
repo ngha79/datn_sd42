@@ -1,6 +1,7 @@
 package com.base.queue;
 
 import com.base.dto.request.ImageUploadBannerMessage;
+import com.base.dto.request.ImageUploadChatMessage;
 import com.base.dto.request.ImageUploadPostMessage;
 import com.base.dto.request.ImageUploadProductMessage;
 import com.base.service.impl.FallbackImageUploadService;
@@ -23,12 +24,21 @@ public class ImageUploadProducer {
     @Value("${rabbitmq.exchange.image}")
     private String imageExchange;
 
-    @Value("${rabbitmq.routing-key.image-upload}")
-    private String imageUploadRoutingKey;
+    @Value("${rabbitmq.routing-key.product-image-upload}")
+    private String productRoutingKey;
 
-    public void sendUploadMessage(ImageUploadProductMessage message) {
+    @Value("${rabbitmq.routing-key.banner-image-upload}")
+    private String bannerRoutingKey;
+
+    @Value("${rabbitmq.routing-key.post-image-upload}")
+    private String postRoutingKey;
+
+    @Value("${rabbitmq.routing-key.chat-image-upload}")
+    private String chatRoutingKey;
+
+    public void sendUploadProductMessage(ImageUploadProductMessage message) {
         try {
-            amqpTemplate.convertAndSend(imageExchange, imageUploadRoutingKey, message);
+            amqpTemplate.convertAndSend(imageExchange, productRoutingKey, message);
             log.info("Queued image message: imageId={}, action={}",
                     message.getImageId(), message.getAction());
 
@@ -40,9 +50,9 @@ public class ImageUploadProducer {
         }
     }
 
-    public void sendUploadMessage(ImageUploadBannerMessage message) {
+    public void sendUploadBannerMessage(ImageUploadBannerMessage message) {
         try {
-            amqpTemplate.convertAndSend(imageExchange, imageUploadRoutingKey, message);
+            amqpTemplate.convertAndSend(imageExchange, bannerRoutingKey, message);
             log.info("Queued image message: bannerId={}, action={}",
                     message.getBannerId(), message.getAction());
 
@@ -54,11 +64,25 @@ public class ImageUploadProducer {
         }
     }
 
-    public void sendUploadMessage(ImageUploadPostMessage message) {
+    public void sendUploadPostMessage(ImageUploadPostMessage message) {
         try {
-            amqpTemplate.convertAndSend(imageExchange, imageUploadRoutingKey, message);
+            amqpTemplate.convertAndSend(imageExchange, postRoutingKey, message);
             log.info("Queued image message: postId={}, action={}",
                     message.getPostId(), message.getAction());
+
+        } catch (AmqpConnectException | AmqpIOException e) {
+            // RabbitMQ không khả dụng → fallback xử lý đồng bộ
+            log.warn("RabbitMQ unavailable, falling back to sync upload. Reason: {}",
+                    e.getMessage());
+            fallbackService.process(message);
+        }
+    }
+
+    public void sendUploadChatMessage(ImageUploadChatMessage message) {
+        try {
+            amqpTemplate.convertAndSend(imageExchange, chatRoutingKey, message);
+            log.info("Queued image message: messaegId={}, action={}",
+                    message.getMessageId(), message.getAction());
 
         } catch (AmqpConnectException | AmqpIOException e) {
             // RabbitMQ không khả dụng → fallback xử lý đồng bộ

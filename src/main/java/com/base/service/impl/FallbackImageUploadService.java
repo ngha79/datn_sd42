@@ -1,9 +1,11 @@
 package com.base.service.impl;
 
 import com.base.dto.request.ImageUploadBannerMessage;
+import com.base.dto.request.ImageUploadChatMessage;
 import com.base.dto.request.ImageUploadPostMessage;
 import com.base.dto.request.ImageUploadProductMessage;
 import com.base.repository.BannerRepository;
+import com.base.repository.MessageRepository;
 import com.base.repository.PostRepository;
 import com.base.repository.ProductImageRepository;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +24,7 @@ public class FallbackImageUploadService {
     private final ProductImageRepository imageRepository;
     private final BannerRepository bannerRepository;
     private final PostRepository postRepository;
+    private final MessageRepository messageRepository;
 
     @Async
     public void process(ImageUploadProductMessage message) {
@@ -88,14 +91,14 @@ public class FallbackImageUploadService {
 
                 case CREATE -> {
                     String cloudUrl = cloudinaryService.uploadFromPath(message.getTempFilePath());
-                    updateImageBannerUrl(message.getPostId(), cloudUrl);
+                    updateImagePostUrl(message.getPostId(), cloudUrl);
                     localStorageService.deleteTempFile(message.getTempFilePath());
                 }
 
                 case UPDATE -> {
                     cloudinaryService.deleteImage(message.getOldImageUrl());
                     String cloudUrl = cloudinaryService.uploadFromPath(message.getTempFilePath());
-                    updateImageBannerUrl(message.getPostId(), cloudUrl);
+                    updateImagePostUrl(message.getPostId(), cloudUrl);
                     localStorageService.deleteTempFile(message.getTempFilePath());
                 }
 
@@ -104,6 +107,34 @@ public class FallbackImageUploadService {
         } catch (Exception e) {
             log.error("Fallback processing failed: postId={}, error={}",
                     message.getPostId(), e.getMessage());
+        }
+    }
+
+    @Async
+    public void process(ImageUploadChatMessage message) {
+        log.info("Fallback sync processing: messageId={}, action={}",
+                message.getMessageId(), message.getAction());
+        try {
+            switch (message.getAction()) {
+
+                case CREATE -> {
+                    String cloudUrl = cloudinaryService.uploadFromPath(message.getTempFilePath());
+                    updateImageMessageUrl(message.getMessageId(), cloudUrl);
+                    localStorageService.deleteTempFile(message.getTempFilePath());
+                }
+
+                case UPDATE -> {
+                    cloudinaryService.deleteImage(message.getOldImageUrl());
+                    String cloudUrl = cloudinaryService.uploadFromPath(message.getTempFilePath());
+                    updateImageMessageUrl(message.getMessageId(), cloudUrl);
+                    localStorageService.deleteTempFile(message.getTempFilePath());
+                }
+
+                case DELETE -> cloudinaryService.deleteImage(message.getOldImageUrl());
+            }
+        } catch (Exception e) {
+            log.error("Fallback processing failed: postId={}, error={}",
+                    message.getMessageId(), e.getMessage());
         }
     }
 
@@ -120,6 +151,14 @@ public class FallbackImageUploadService {
         bannerRepository.findById(bannerId).ifPresent(img -> {
             img.setImageUrl(cloudUrl);
             bannerRepository.save(img);
+        });
+    }
+
+    @Transactional
+    protected void updateImageMessageUrl(Long bannerId, String cloudUrl) {
+        messageRepository.findById(bannerId).ifPresent(img -> {
+            img.setImageUrl(cloudUrl);
+            messageRepository.save(img);
         });
     }
 

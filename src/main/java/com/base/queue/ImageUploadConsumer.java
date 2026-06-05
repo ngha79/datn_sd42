@@ -1,10 +1,12 @@
 package com.base.queue;
 
 import com.base.dto.request.ImageUploadBannerMessage;
+import com.base.dto.request.ImageUploadChatMessage;
 import com.base.dto.request.ImageUploadPostMessage;
 import com.base.dto.request.ImageUploadProductMessage;
 import com.base.exception.BadRequestException;
 import com.base.repository.BannerRepository;
+import com.base.repository.MessageRepository;
 import com.base.repository.PostRepository;
 import com.base.repository.ProductImageRepository;
 import com.base.service.impl.CloudinaryService;
@@ -24,9 +26,10 @@ public class ImageUploadConsumer {
     private final ProductImageRepository imageRepository;
     private final BannerRepository bannerRepository;
     private final PostRepository postRepository;
+    private final MessageRepository messageRepository;
 
-    @RabbitListener(queues = "${rabbitmq.queue.image-upload}")
-    public void handleImageUpload(ImageUploadProductMessage message) {
+    @RabbitListener(queues = "${rabbitmq.queue.product-image-upload}")
+    public void handleImageProductUpload(ImageUploadProductMessage message) {
         log.info("Processing: imageId={}, action={}", message.getImageId(), message.getAction());
         try {
             switch (message.getAction()) {
@@ -70,8 +73,8 @@ public class ImageUploadConsumer {
         }
     }
 
-    @RabbitListener(queues = "${rabbitmq.queue.image-upload}")
-    public void handleImageUpload(ImageUploadBannerMessage message) {
+    @RabbitListener(queues = "${rabbitmq.queue.banner-image-upload}")
+    public void handleImageBannerUpload(ImageUploadBannerMessage message) {
         log.info("Processing: bannerId={}, action={}", message.getBannerId(), message.getAction());
         try {
             switch (message.getAction()) {
@@ -115,8 +118,8 @@ public class ImageUploadConsumer {
         }
     }
 
-    @RabbitListener(queues = "${rabbitmq.queue.image-upload}")
-    public void handleImageUpload(ImageUploadPostMessage message) {
+    @RabbitListener(queues = "${rabbitmq.queue.post-image-upload}")
+    public void handleImagePostUpload(ImageUploadPostMessage message) {
         log.info("Processing: postId={}, action={}", message.getPostId(), message.getAction());
         try {
             switch (message.getAction()) {
@@ -156,6 +159,51 @@ public class ImageUploadConsumer {
         } catch (Exception e) {
             log.error("Failed to process image: postId={}, error={}",
                     message.getPostId(), e.getMessage());
+            throw new BadRequestException("RabbitMQ retry post"); // RabbitMQ retry
+        }
+    }
+
+    @RabbitListener(queues = "${rabbitmq.queue.chat-image-upload}")
+    public void handleImageChatUpload(ImageUploadChatMessage message) {
+        log.info("Processing: messageId={}, action={}", message.getMessageId(), message.getAction());
+        try {
+            switch (message.getAction()) {
+
+                case CREATE -> {
+                    String cloudUrl = cloudinaryService.uploadFromPath(message.getTempFilePath());
+
+                    messageRepository.findById(message.getMessageId()).ifPresent(img -> {
+                        img.setImageUrl(cloudUrl);
+                        messageRepository.save(img);
+                    });
+
+                    localStorageService.deleteTempFile(message.getTempFilePath());
+                    log.info("Image uploaded: postId={}, url={}", message.getMessageId(), cloudUrl);
+                }
+
+                case UPDATE -> {
+                    if (message.getOldImageUrl() != null) {
+                        cloudinaryService.deleteImage(message.getOldImageUrl());
+                    }
+                    String cloudUrl = cloudinaryService.uploadFromPath(message.getTempFilePath());
+
+                    messageRepository.findById(message.getMessageId()).ifPresent(img -> {
+                        img.setImageUrl(cloudUrl);
+                        messageRepository.save(img);
+                    });
+
+                    localStorageService.deleteTempFile(message.getTempFilePath());
+                }
+
+                case DELETE -> {
+                    if (message.getOldImageUrl() != null) {
+                        cloudinaryService.deleteImage(message.getOldImageUrl());
+                    }
+                }
+            }
+        } catch (Exception e) {
+            log.error("Failed to process image: messageId={}, error={}",
+                    message.getMessageId(), e.getMessage());
             throw new BadRequestException("RabbitMQ retry"); // RabbitMQ retry
         }
     }

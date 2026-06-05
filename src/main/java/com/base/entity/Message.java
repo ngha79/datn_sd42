@@ -2,6 +2,7 @@ package com.base.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
 
@@ -25,7 +26,8 @@ public class Message {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "message_type")
-    private MessageType messageType;
+    @Builder.Default
+    private MessageType messageType = MessageType.TEXT;
 
     @Column(name = "message_content", columnDefinition = "TEXT")
     private String messageContent;
@@ -33,13 +35,24 @@ public class Message {
     @Column(name = "image_url")
     private String imageUrl;
 
-    @Column(name = "sent_at", updatable = false)
     @Builder.Default
-    private LocalDateTime sentAt = LocalDateTime.now();
+    private boolean deleted = false;
 
     @Column(name = "is_read")
     @Builder.Default
     private boolean isRead = false;
 
-    public enum MessageType { TEXT, IMAGE, ORDER_REF }
+    @Column(name = "read_at")
+    private LocalDateTime readAt;
+
+    @CreationTimestamp
+    @Column(name = "sent_at", updatable = false)
+    private LocalDateTime sentAt;
+
+    public enum MessageType { TEXT, IMAGE }
+
+    public void markAsRead() {
+        this.isRead = true;
+        this.readAt = LocalDateTime.now();
+    }
 }

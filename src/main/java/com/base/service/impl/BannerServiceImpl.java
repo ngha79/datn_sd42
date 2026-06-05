@@ -59,7 +59,7 @@ public class BannerServiceImpl implements BannerService {
 
         banner = bannerRepository.save(banner);
 
-        imageUploadProducer.sendUploadMessage(
+        imageUploadProducer.sendUploadBannerMessage(
                 ImageUploadBannerMessage.builder()
                         .bannerId(banner.getBannerId())
                         .tempFilePath(tempPath)
